@@ -21,36 +21,38 @@ public class AuthService {
 
     @Transactional
     public String register(String username, String password) {
-        System.out.println("DEBUG: Registering user: " + username);
-        if (userRepository.findByUsername(username).isPresent()) {
-            System.out.println("DEBUG: User already exists: " + username);
+        String cleanUsername = username.trim();
+        String cleanPassword = password.trim();
+        
+        System.out.println("DEBUG: Registering user: [" + cleanUsername + "]");
+        if (userRepository.findByUsername(cleanUsername).isPresent()) {
             return "User already exists";
         }
         User user = new User();
-        user.setUsername(username);
-        user.setPassword(password);
+        user.setUsername(cleanUsername);
+        user.setPassword(cleanPassword);
         userRepository.save(user);
-        System.out.println("DEBUG: User saved successfully: " + username);
         return "User registered successfully";
     }
 
     public String login(String username, String password) {
-        System.out.println("DEBUG: Login attempt for: " + username);
-        Optional<User> userOpt = userRepository.findByUsername(username);
+        String cleanUsername = username.trim();
+        String cleanPassword = password.trim();
+        
+        System.out.println("DEBUG: Login attempt for: [" + cleanUsername + "]");
+        Optional<User> userOpt = userRepository.findByUsername(cleanUsername);
         
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            System.out.println("DEBUG: User found in DB. Comparing passwords...");
-            if (user.getPassword().equals(password)) {
+            // Хэрэв баазад хадгалагдсан нууц үг зайнаас болоод зөрүүтэй байвал trim хийнэ
+            if (user.getPassword().trim().equals(cleanPassword)) {
                 String token = UUID.randomUUID().toString();
-                tokens.put(token, username);
-                System.out.println("DEBUG: Login successful. Token generated.");
+                tokens.put(token, cleanUsername);
+                System.out.println("DEBUG: Login successful for " + cleanUsername);
                 return token;
             } else {
-                System.out.println("DEBUG: Password mismatch for user: " + username);
+                System.out.println("DEBUG: Password mismatch. DB password length: " + user.getPassword().length() + ", Input length: " + cleanPassword.length());
             }
-        } else {
-            System.out.println("DEBUG: User not found in DB: " + username);
         }
         return "Invalid credentials";
     }
