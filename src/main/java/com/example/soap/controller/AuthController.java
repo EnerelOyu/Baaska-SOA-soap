@@ -24,10 +24,10 @@ public class AuthController {
         
         Map<String, String> response = new HashMap<>();
         if ("Invalid credentials".equals(token)) {
-            response.put("error", "Login failed");
+            response.put("error", "Invalid username or password");
         } else {
             response.put("token", token);
-            response.put("username", username); // Return username so frontend knows who logged in
+            response.put("username", username);
         }
         return response;
     }
@@ -37,10 +37,14 @@ public class AuthController {
         String username = request.get("username");
         String password = request.get("password");
         
-        authService.register(username, password);
+        String result = authService.register(username, password);
         
         Map<String, String> response = new HashMap<>();
-        response.put("message", "User registered successfully");
+        if (result.contains("successfully")) {
+            response.put("message", result);
+        } else {
+            response.put("error", result); // "User already exists" гэх мэт
+        }
         return response;
     }
 }
