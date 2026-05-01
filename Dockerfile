@@ -1,8 +1,10 @@
 FROM maven:3.8.4-openjdk-17-slim AS build
-COPY src /app/src
-COPY pom.xml /app
-RUN mvn -f /app/pom.xml clean package -DskipTests
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests && rm -f target/*-plain.jar
 
 FROM eclipse-temurin:17-jdk
+WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
